@@ -1,48 +1,5 @@
-#ifndef _HTML_INCLUDE_H__
-#define _HTML_INCLUDE_H__
 
-const char indexhtml[] PROGMEM = 
-"<!DOCTYPE HTML>"
-"<html>"
-"<head>"
-"<script>"
-"window.onload = function () {"
-"var dps = [0]; // dataPoints"
-"var dataLength = 20; // number of dataPoints visible at any point"
-"var chart = new CanvasJS.Chart('chartContainer', {"
-"title :{"
-"text: 'Current Meter'"
-"},"
-"axisY: {"
-"includeZero: false"
-"},"
-"data: [{"
-"type: 'line',"
-"dataPoints: dps"
-"}]"
-"});"
-"setInterval(function(){asyncRead('/current_reading',updateChart)}, 100);"
-"function asyncRead(url, func){ //read data from ESP8266"
-"var xhttp = new XMLHttpRequest();"
-"xhttp.onreadystatechange = function(){"
-"if(this.readyState == 4 && this.status == 200){ func.apply(xhttp); }"
-"};"
-"xhttp.open(\'GET\', url, true);"
-"xhttp.send();"
-"}"
-"function updateChart () { //update Chart with data"
-"count = this.responseText;"
-"dps.push(count);"
-"if (dps.length > dataLength) { dps.shift(); }"
-"chart.render();"
-"};"
-"}"
-"</script>"
-"</head>"
-"<body>"
-"<div id='chartContainer' style='height: 300px; width: 100%;'></div>"
-"<script src='https://canvasjs.com/assets/script/canvasjs.min.js'></script>"
-"</body>"
-"</html>";
-
+#ifndef _HTML_H__
+#define _HTML_H__
+const char indexhtml[] PROGMEM = "<!DOCTYPE HTML><html><head><script>window.onload=function(){var time_scale=10;var data_len=50;var t_res=time_scale/data_len;var datapoints=[];for(i=0;i<data_len;i++){datapoints.push(0);}var reading_span=document.getElementById('reading');var average_span=document.getElementById('average');var seconds_span=document.getElementById('sec');seconds_span.innerText=time_scale;var log=document.getElementById('log');var canvas=document.getElementById('chart');var ctx=canvas.getContext('2d');var avg=0;function asyncRead(url,func){func(5+Math.random()*2);}function updateData(data){datapoints.push(data);datapoints.shift();var sum=0;for(var i=0;i<datapoints.length;i++){sum+=parseInt(datapoints[i],10);}avg=sum/datapoints.length;updatePage(data);}function updatePage(data){reading_span.innerText=data;average_span.innerText=avg;var dist=canvas.width/data_len;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.moveTo(0,0);ctx.beginPath();p=0;datapoints.forEach(function(value){ctx.lineTo(p,canvas.height -(value*10));p+=dist;});ctx.stroke();}setInterval(function(){asyncRead('current',updateData)},t_res*1000);var button=document.getElementById('capture');button.onclick=function(){var d=new Date();var p=document.createElement('p');p.innerText='Reading: '+datapoints.slice(-1)[0].toFixed(3)+' at '+d;log.insertBefore(p,log.firstChild);};var checkbox=document.getElementById('checkbox');checkbox.onclick=function(){if(checkbox.checked==true){checkbox_interval=setInterval(function(){button.onclick();},500);}else{console.log('UNCHECKED');clearInterval(checkbox_interval);}}}</script></head><body><h1>Current reading is:<span id='reading'>0</span></h1><h2>Average over<span id='sec'></span>seconds:<span id='average'>0</span></h2><canvas id='chart' width='400px;' height='200px;'></canvas><br><button id='capture'>Capture</button><input type='checkbox' id='checkbox'>Auto-log</input><div id='log'></div></body></html>"; 
 #endif
