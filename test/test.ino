@@ -1,29 +1,62 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+
+// Replace with your network credentials
+const char* ssid = "<Your-WiFi-SSID>";
+const char* password = "<Your-WiFi-Password>";
+
+ESP8266WebServer server(80);   //instantiate server at port 80 (http port)
+
+double data = 0;	// to store current reading
+String text = ""; // to convert reading -> text
+
+// to include the html file that we've written, plus any other code here.
+// note the structure: this will smash it all into one long string called
+// indexhtml
+
+const char indexhtml[] PROGMEM = "
+#include <../webcode/index.html>
+";
 
 
+void setup(void){
+	pinMode(A0, INPUT);
+	Serial.begin(115200);
+	WiFi.begin(ssid, password); //begin WiFi connection
+	Serial.println("");
 
-void setup(){
-	Serial.begin(9600);
-	Serial.println("A0 Test for ESP8266 Camping Battery Meter");
-	Serial.println("-----------");
-	Serial.println("Connect circuit and ESP, then open this serial monitor while adjusting current");
-	Serial.println("-----------");
-	//out of 1024 maps to 0 -> 3.3v
-	Serial.println("5A = 50mA, so each amp is 10mV on the QP5510 Shunt");
+	// Wait for connection
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
 
-	Serial.println();
-	Serial.println();
-	Serial.println("Press [Enter] when ready");
+	Serial.println("");
+	Serial.print("Connected to ");
+	Serial.println(ssid);
+	Serial.print("IP address: ");
+	Serial.println(WiFi.localIP());
+
+	//here we define what different web-routes are
+	//notice the website will get up-to-date data from "/current"
+	//so here we define that we send back a reading of the data.
+
+	server.on("/current", [](){
+		text = (String)data;
+		server.send(200, "text/html", text);
+	});
+
+	server.on("/", [](){
+		server.send(200, "text/html", indexhtml);
+	});
+
+	server.begin();
+	Serial.println("Web server started!");
 }
 
-void loop(){
-	int reading = analogRead(A0);
-
-	Serial.print("Reading A0: ");
-	Serial.print(reading,DEC);
-	Serial.print(", converted to: ");
-	Serial.print(round(((float)reading/1024.0)*100), DEC);
-	Serial.println("\% of 5A amps");
-
+void loop(void){
+	data = analogRead(A0);
 	delay(100);
+	server.handleClient();
 }
-
