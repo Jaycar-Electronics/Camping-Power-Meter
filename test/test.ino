@@ -11,13 +11,7 @@ ESP8266WebServer server(80);   //instantiate server at port 80 (http port)
 double data = 0;	// to store current reading
 String text = ""; // to convert reading -> text
 
-// to include the html file that we've written, plus any other code here.
-// note the structure: this will smash it all into one long string called
-// indexhtml
-
-#define str(x) #x
-
-const char indexhtml[] PROGMEM = str(#include "index.h");
+#include "html.h"
 
 
 void setup(void){
@@ -25,13 +19,12 @@ void setup(void){
 	Serial.begin(115200);
 	WiFi.begin(ssid, password); //begin WiFi connection
 	Serial.println("");
-	Serial.println(indexhtml);
+
 	// Wait for connection
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
 		Serial.print(".");
 	}
-
 	Serial.println("");
 	Serial.print("Connected to ");
 	Serial.println(ssid);
@@ -50,6 +43,7 @@ void setup(void){
 	server.on("/", [](){
 		server.send(200, "text/html", indexhtml);
 	});
+
 	server.begin();
 	Serial.println("Web server started!");
 }
