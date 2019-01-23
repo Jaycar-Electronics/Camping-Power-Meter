@@ -15,9 +15,9 @@ String text = ""; // to convert reading -> text
 // note the structure: this will smash it all into one long string called
 // indexhtml
 
-const char indexhtml[] PROGMEM = "
-#include <../webcode/index.html>
-";
+#define str(x) #x
+
+const char indexhtml[] PROGMEM = str(#include "index.h");
 
 
 void setup(void){
@@ -25,7 +25,7 @@ void setup(void){
 	Serial.begin(115200);
 	WiFi.begin(ssid, password); //begin WiFi connection
 	Serial.println("");
-
+	Serial.println(indexhtml);
 	// Wait for connection
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
@@ -50,7 +50,6 @@ void setup(void){
 	server.on("/", [](){
 		server.send(200, "text/html", indexhtml);
 	});
-
 	server.begin();
 	Serial.println("Web server started!");
 }
