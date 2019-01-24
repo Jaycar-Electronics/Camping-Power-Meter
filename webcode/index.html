@@ -1,7 +1,10 @@
 <!DOCTYPE HTML>
-<html>
-	<head>
-		<script>
+<html> <head> <title>CampingCurrentMeter</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"> 
+	<script>
+/*
+This script runs on your phone via the ESP8266
+ */
 window.onload = function(){
 	//timescale in seconds
 	var time_scale = 10;
@@ -15,7 +18,7 @@ window.onload = function(){
 	var reading_span = document.getElementById('reading');
 	var average_span = document.getElementById('average');
 	var seconds_span = document.getElementById('sec');
-		seconds_span.innerText = time_scale;
+	seconds_span.innerText = time_scale;
 	var log = document.getElementById('log');
 	var canvas = document.getElementById('chart');
 	var ctx = canvas.getContext("2d");
@@ -23,12 +26,12 @@ window.onload = function(){
 
 	function asyncRead(url, func){ //read data from ESP8266 
 		/*
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function(){
-						if(this.readyState == 4 && this.status == 200){ func(xhttp.responseText); }
-				};
-				xhttp.open("GET", url, true);
-				xhttp.send();
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){ func(xhttp.responseText); }
+			};
+			xhttp.open("GET", url, true);
+			xhttp.send();
 		 */
 		func(5 + Math.random() * 2);
 	}
@@ -44,10 +47,11 @@ window.onload = function(){
 		updatePage(data);
 	}
 	function updatePage(data){
-		reading_span.innerText = data;
+		reading_span.innerText = data.toFixed(3);
 		average_span.innerText = avg;
 		var dist = canvas.width / data_len;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.strokeStyle = "#0000FF";
 		ctx.moveTo(0, 0);
 		ctx.beginPath();
 		p = 0;
@@ -59,15 +63,23 @@ window.onload = function(){
 		});
 		ctx.stroke();
 	}
-	
+
 	setInterval(function(){asyncRead('current',updateData)},t_res * 1000);
 
 	var button = document.getElementById('capture');
 	button.onclick = function(){
 		var d = new Date();
-		var p = document.createElement('p');
-		p.innerText = 'Reading: ' + datapoints.slice(-1)[0].toFixed(3) + ' at ' + d;
-		log.insertBefore(p,log.firstChild);
+		var dateString =
+			("0" + d.getHours()).slice(-2) + ":" +
+			("0" + d.getMinutes()).slice(-2) + ":" +
+			("0" + d.getSeconds()).slice(-2) + " " +
+			d.getFullYear() + "/" +
+			("0" + (d.getMonth()+1)).slice(-2) + "/" +
+			("0" + d.getDate()).slice(-2);
+
+		var innerText = 'Reading: ' + datapoints.slice(-1)[0].toFixed(3) + ' at ' + dateString + "\n" ;
+		log.value = innerText + log.value;
+		//log.insertBefore(p,log.firstChild);
 	};
 
 	var checkbox = document.getElementById('checkbox');
@@ -81,17 +93,37 @@ window.onload = function(){
 		}
 	}
 }
-		</script>
-	</head>
-	<body>
-		<h1>Current reading is: <span id='reading'>0</span></h1>
+</script>
+<style>
+textarea{
+	margin-top: 10px;
+}
+h1,h2,h3,p{
+	font-family: "Arial Black", Gadget, sans-serif;
+	color: darkblue;
+}
+span{
+	color: red;
+}
+.form > button,textarea{
+
+	border: 1px solid darkblue;
+}
+</style>
+</head>
+<body>
+	<center>
+		<h1>Jaycar</h1>
+		<h1>Current reading: <span id='reading'>0</span></h1>
 		<h2> Average over <span id='sec'></span> seconds: <span id='average'>0</span></h2>
-		<canvas id='chart' width='400px;' height='200px;'>
-		</canvas>
-		<br>
-		<button id='capture'>Capture</button>
-		<input type='checkbox' id='checkbox'>Auto-log</input>
-		<div id='log'>
+		<canvas id='chart' width='300px;' height='100px;' style='border: 1px solid black;'> </canvas>
+		<div class='form'>
+			<button id='capture'>Capture</button>
+			<input type='checkbox' id='checkbox'>Auto-log</input>
+			<button id='copier'>Copy to clipboard</button>
+			<br/>
+			<textarea id='log' cols='40' rows='60' readonly='true'></textarea>
 		</div>
-	</body>
+	</center>
+</body>
 </html>
