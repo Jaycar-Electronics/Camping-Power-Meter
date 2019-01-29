@@ -146,4 +146,119 @@ The software is the other half of the design for this. We can get to that once w
 
 ## Programming
 
-The software 
+The software for this comes in two separate parts; the code running on the ESP and the code in the browser. Conceptually it looks like this:
+
+![](images/concept.png)
+
+#### ESP8266 code
+
+Firstly, the ESP handles the connections to and from the phone, and handles all the WiFi connectivity, when the phone asks for a website (which is `WWW.XXX.YYY.ZZZ/index.html` by default) the ESP sends the website code to the phone. This is handled by the code below, *(some parts ommitted for brevity)*
+
+```c
+ESP8266WebServer server(80);
+
+void setup(){
+  server.on("/" [](){
+    server.send(200, "text/html", indexhtml);
+  });
+}
+void loop(){
+  server.handleClient();
+}
+```
+
+If you've done some c code before, you might see the `[](){...}` and wonder what that is. This is simply an *anonymous* function, which means it's a function with no name. For now you don't have to worry about it, but it allows us to put our function right into the parameter of the server.on statement, which might make it a little easier to read and follow for these small examples. If it were any bigger, we'd probably put it into a seperate function, and put that function here instead;
+
+we also provide another "webpage" under the "/current" web-address. so when the phone asks for `WWWW.XXX.YYY.ZZZ/current` we run the following code:
+
+```c
+  String text = "";
+  double data = 0;
+
+  server.on("/current",[](){
+    text = (String) data;
+    server.send(200, "text/html", text);
+  });
+```
+
+This code first converts the `data` variable into a string/text format, and then sends it over the web-connection.
+Back in the loop, we simply set the data being the reading from analogRead:
+
+```c
+void loop(){
+  // etc
+  data = analogRead(A0);
+}
+```
+
+#### Website code
+
+Now that the ESP delivers our webpage, we want more than just a simple static number to represent whatever the reading was at that point of time. Firstly we'll build a bit of a webpage with html code, and then fill it out and update it with Javascript.
+
+
+```html
+<body>
+	<center>
+		<h1>Jaycar</h1>
+		<h1>Current reading: <span id='reading'>0</span></h1>
+		<h2> Average over <span id='sec'></span> seconds: <span id='average'>0</span></h2>
+		<canvas id='chart' width='300px;' height='100px;' style='border: 1px solid black;'> </canvas>
+		<div class='form'>
+			<button id='capture'>Capture</button>
+			<input type='checkbox' id='checkbox'>Auto-log</input>
+			<button id='copier'>Copy to clipboard</button>
+			<br/>
+			<textarea id='log' cols='40' rows='60' readonly='true'></textarea>
+		</div>
+	</center>
+</body>
+```
+
+Here we're using a *canvas* element so that we can draw a graph, as well as a textarea for the log data, and some buttons.
+
+In javascript, we'll now get the elements and assign some dynamic information:
+
+```javascript
+window.onload = function(){
+  function asyncRead(url,func){ /**/ };
+  function updateData(data){ /**/ };
+  function updatePage(data){ /**/ };
+
+  //ommited for brevity
+	var reading_span = document.getElementById('reading');
+	var seconds_span = document.getElementById('sec');
+	seconds_span.innerText = time_scale;
+	var button = document.getElementById('capture');
+  // etc
+
+	button.onclick = function(){
+	};
+
+	checkbox.onclick = function(){
+		if (checkbox.checked == true){
+      //etc
+		}else{
+      //etc
+		}
+	}
+	setInterval(function(){
+    asyncRead('current',updateData)
+  }, 500);
+}
+```
+
+We've cut out a lot of the code to make the general layout more promient.
+
+1. Firstly, we set this function to be on page load, so once the page has fully finished loading, it will then run this javascript code.
+
+2. We'll make some functions called `asyncRead` to read and process the data from the `/current` webpage on the same domain as this webpage. as well as `updateData` to keep track of an array of data, and `updatePage` to show up on the html site.
+
+3. We'll get some handles for the elements on the page, thankfully we've given them each an id, so we can just use the `document.getElementById()` function to get a javascript handle to that particular element with id.
+
+4. With the button and checkbox, we'll set an "onclick" function, so when the users click on these elements, it will run these functions.
+
+5. Finally, we'll use the `setInterval(function,time);` javascript call, so that the phone will call this function, every 500ms; this is so the page will automatically refresh with new information, as each 500ms asyncRead will be called, updating the stored data and then updating the page.
+
+## Use
+
+Use is easy enough, look on your phone for a new network and connect to it. From there, if you open up the webbrowser and navigate to ""
