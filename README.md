@@ -42,7 +42,7 @@ Our little ESP only takes 3.3V of analog voltage, so the only way we can get 5A 
 
 This isn't as difficult as it seems, as **current shunts** are exactly what this is designed for.
 
-###### Current Shunts.
+###### Current Shunts
 
 "Shunt" in a term, means to "divert" - here, we're going to divert the current away from our little measuring device (which will be the ESP) and continue back to the source. Current shunts are specialized to be of a certain resistance,  The shunt that we are using is a 5A shunt, which is rated at 50mV.
 
@@ -275,6 +275,16 @@ We've cut out a lot of the code to make the general layout more promient.
 4. With the button and checkbox, we'll set an "onclick" function, so when the users click on these elements, it will run these functions.
 
 5. Finally, we'll use the `setInterval(function,time);` javascript call, so that the phone will call this function, every 500ms; this is so the page will automatically refresh with new information, as each 500ms asyncRead will be called, updating the stored data and then updating the page.
+
+###### Putting the website onto the ESP
+
+Unfortunately, adding the website code to the ESP can be a bit of a trick if it relies on loading an external file; we'd then have to include an SD card, load some `FAT32` filesystem just to read that file, etc etc.
+
+However, we can work around that by injecting the website code right into the ESP during compile time, which is what the `#include "./html.h"` does.
+
+We've also included a `convert.py` that you can run using python 3, which will read in the **webcode/index.html** file, and minify it into a c-styled header file to be included in the code.
+
+Every change you do to the webcode will have to be minified in this way to be re-injected into the ESP during compile time.
 
 ## Use
 
