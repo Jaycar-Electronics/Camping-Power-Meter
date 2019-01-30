@@ -1,36 +1,27 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include "./dns.h" 				//dns server information
+#include "./html.h"				//html page
 
-// Replace with your network credentials
-const char* ssid = "<Your-WiFi-SSID>";
-const char* password = "<Your-WiFi-Password>";
+#define custom_ssid "Camping Power Meter"
 
-ESP8266WebServer server(80);   //instantiate server at port 80 (http port)
+ESP8266WebServer	server(80);	//instantiate server at port 80 (http port)
+DNSServer			dns;		//create dns object
+IPAddress			apIP(10,0,0,7);	//our access point ip
 
 double data = 0;	// to store current reading
 String text = ""; // to convert reading -> text
-
-#include "html.h"
 
 
 void setup(void){
 	pinMode(A0, INPUT);
 	Serial.begin(115200);
-	WiFi.begin(ssid, password); //begin WiFi connection
-	Serial.println("");
- 
-	// Wait for connection
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
-	}
-	Serial.println("");
-	Serial.print("Connected to ");
-	Serial.println(ssid);
-	Serial.print("IP address: ");
-	Serial.println(WiFi.localIP());
 
+	WiFi.softAPConfig(apIP, apIP, IPAddress(255,255,255,0));
+	WiFi.softAP(custom_ssid);
+	dns.start(53, "*", apIP);	//this routes everything to ourselves
+	
 	//here we define what different web-routes are
 	//notice the website will get up-to-date data from "/current"
 	//so here we define that we send back a reading of the data.
@@ -50,6 +41,7 @@ void setup(void){
 
 void loop(void){
 	data = analogRead(A0);
-	delay(100);
+	delay(50);
+	dns.processNextRequest();
 	server.handleClient();
 }
