@@ -42,7 +42,7 @@ Our little ESP only takes 3.3V of analog voltage, so the only way we can get 5A 
 
 This isn't as difficult as it seems, as **current shunts** are exactly what this is designed for.
 
-###### Current Shunts.
+###### Current Shunts
 
 "Shunt" in a term, means to "divert" - here, we're going to divert the current away from our little measuring device (which will be the ESP) and continue back to the source. Current shunts are specialized to be of a certain resistance,  The shunt that we are using is a 5A shunt, which is rated at 50mV.
 
@@ -152,7 +152,19 @@ The software for this comes in two separate parts; the code running on the ESP a
 
 #### ESP8266 code
 
-Firstly, the ESP handles the connections to and from the phone, and handles all the WiFi connectivity, when the phone asks for a website (which is `WWW.XXX.YYY.ZZZ/index.html` by default) the ESP sends the website code to the phone. This is handled by the code below, *(some parts ommitted for brevity)*
+Firstly, the ESP handles the connections to and from the phone, and handles all the WiFi connectivity, when the phone asks for a website (which is `10.0.0.7/index.html` by default) the ESP sends the website code to the phone.
+
+###### Access point IP address
+You will find, near the top of the code:
+
+```c
+IPAddress			apIP(10,0,0,7);	//our access point ip
+```
+This sets up the IP address to be had by the access point when we run the server, and it corresponds to an ip address of `10.0.0.7` -- you can change this variable to any ip address that you want, you will just have to remember it to put into the phone later.
+
+###### Delivering the website to the phone
+
+The website is handled by the code below, *(some parts ommitted for brevity)*
 
 ```c
 ESP8266WebServer server(80);
@@ -167,9 +179,13 @@ void loop(){
 }
 ```
 
-If you've done some c code before, you might see the `[](){...}` and wonder what that is. This is simply an *anonymous* function, which means it's a function with no name. For now you don't have to worry about it, but it allows us to put our function right into the parameter of the server.on statement, which might make it a little easier to read and follow for these small examples. If it were any bigger, we'd probably put it into a seperate function, and put that function here instead;
+If you've done some c code before, you might see the `[](){...}` and wonder what that is.
+This is simply an *anonymous* function, which means it's a function with no name.
+For now you don't have to worry about it, but it allows us to put our function right into the parameter of the `server.on()` statement, which might make it a little easier to read and follow for these small examples.
+If it were any bigger, we'd probably put it into a seperate function, and put that function here instead;
 
-we also provide another "webpage" under the "/current" web-address. so when the phone asks for `WWWW.XXX.YYY.ZZZ/current` we run the following code:
+we also provide another "webpage" under the "/current" web-address.
+So when the phone asks for `10.0.0.7/current` we run the following code:
 
 ```c
   String text = "";
@@ -195,6 +211,7 @@ void loop(){
 
 Now that the ESP delivers our webpage, we want more than just a simple static number to represent whatever the reading was at that point of time. Firstly we'll build a bit of a webpage with html code, and then fill it out and update it with Javascript.
 
+Javascript code and displaying the HTML is handled by the phone or computer; sort of like the ESP is sending these commands to the phone, to display it like such. There is quite a bit more processing power and ability on the phone compared to the tiny ESP module.
 
 ```html
 <body>
@@ -259,6 +276,17 @@ We've cut out a lot of the code to make the general layout more promient.
 
 5. Finally, we'll use the `setInterval(function,time);` javascript call, so that the phone will call this function, every 500ms; this is so the page will automatically refresh with new information, as each 500ms asyncRead will be called, updating the stored data and then updating the page.
 
+###### Putting the website onto the ESP
+
+Unfortunately, adding the website code to the ESP can be a bit of a trick if it relies on loading an external file; we'd then have to include an SD card, load some `FAT32` filesystem just to read that file, etc etc.
+
+However, we can work around that by injecting the website code right into the ESP during compile time, which is what the `#include "./html.h"` does.
+
+We've also included a `convert.py` that you can run using python 3, which will read in the **webcode/index.html** file, and minify it into a c-styled header file to be included in the code.
+
+Every change you do to the webcode will have to be minified in this way to be re-injected into the ESP during compile time.
+
 ## Use
 
-Use is easy enough, look on your phone for a new network and connect to it. From there, if you open up the webbrowser and navigate to ""
+Use is easy enough, look on your phone for a new network and connect to it.
+From there, if you open up the webbrowser and navigate to `10.0.0.7` or whatever IP address you set above in the ip address section.
