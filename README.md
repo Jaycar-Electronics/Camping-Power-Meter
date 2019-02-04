@@ -1,6 +1,9 @@
 # Camping-Battery-Meter
 
-Use this handy device to quickly determine what each device in your camping setup is using, which is great for calculating which solar panel you will need to keep the car or caravan battery charged over the long weekend.
+This is more of an electronics lesson than anything else, We go over the fundamental electronics for building a complete circuit idea, discussing Ohm's law, Kirchhoff's law, analog and digital values, and the difference between website and embedded-C code.
+
+This device is a simple current meter, set up so you can use it while camping to see what sort of power your 12v devices are using.
+
 
 ## Bill of Materials
 
@@ -8,7 +11,7 @@ Use this handy device to quickly determine what each device in your camping setu
 |---|---|---|
 |1 | [XC3802](http://jaycar.com.au/p/XC3802) | ESP 8266
 |2 | [ZR1398](http://jaycar.com.au/p/ZR1398) | 3v3 zener diode
-|1 | [RR2550](http://jaycar.com.au/p/RR2550) | 100ohm resistor
+|1 | [RR2550](http://jaycar.com.au/p/RR3258) | 22ohm resistor
 |1 | [QP5410](http://jaycar.com.au/p/QP5410) | 5A shunt
 |1 | [WC6026](http://jaycar.com.au/p/WC6026) | socket to socket jumper lead
 |1 | [WH3057](http://jaycar.com.au/p/WH3057) | 7.5A 2 Core tinned cable
@@ -47,6 +50,9 @@ This isn't as difficult as it seems, as **current shunts** are exactly what this
 "Shunt" in a term, means to "divert" - here, we're going to divert the current away from our little measuring device (which will be the ESP) and continue back to the source. Current shunts are specialized to be of a certain resistance,  The shunt that we are using is a 5A shunt, which is rated at 50mV.
 
 ![shunt image showing rating](images/shunt.png)
+
+*Note, your shunt might look a little different*
+
 This means, for 5A of current, we'll read 50mV, or 1mV per 100mA of current, which is pretty good for what we'll be needing;
 
 ###### Interface and control system
@@ -65,7 +71,7 @@ We can also see that it is a 10-bit ADC, which means it can convert a voltage si
 
 The process of converting a analog value to digital, such as 0.254546 Volts in the real word to a value that the ESP can process, is called quantization.
 
-You can see a quick visual guide to what quantization is below: *(Images courtesy of  Hayacinth at Wikipedia)*
+You can see a quick visual guide to what quantization is below: *(Images courtesy of Hayacinth at Wikipedia)*
 
 ![](images/2bitadc.png)
 
@@ -124,7 +130,7 @@ In this case, we want a voltage drop across b to be 3.3v; we could use resistors
 
 In order to protect the circuit, and to give a nice clean 3.3V, we'll use a [Zener diode](https://www.evilmadscientist.com/2012/basics-introduction-to-zener-diodes/) such as our [ZR1398](http://jaycar.com.au/p/ZR1398) in place of b to give that 3.3V voltage drop, and thus voltage output.
 
-Using the 3.3 zener here means that the other 8.7v must be dropped somewhere along this circuit (Kirchhoff's law, remember!) - we'll use a 100ohm Resistor, which, with Ohm's law, causes 87mA of current through the resistor and available for the ESP.
+Using the 3.3 zener here means that the other 8.7v must be dropped somewhere along this circuit (Kirchhoff's law, remember!) - we'll use a 22ohm Resistor, which, with Ohm's law, causes 395mA of current through the resistor and available for the ESP and zener diode.
 
 And, as the 3.3V zener is in place of B, we know that the voltage out will be 3.3V. Note that these are never ideal "regulator circuits" but for this theory lesson it should do fairly nicely.
 
@@ -138,11 +144,39 @@ For reference:
 
 ![](images/complete.png)
 
-#### What about the software?
-
-The software is the other half of the design for this. We can get to that once we've built the unit.
-
 ## Assembly
+
+Assembling the unit is pretty easy, as we've done all the groundwork already.
+First step is to cut the cable in half and make the plug and socket connections like so:
+
+![](images/socket.jpg)
+
+*Socket connection, using red for positive and white for negative.*
+
+![](images/plug2.jpg)
+
+Similarly for the plug, we will put the red on the center pin position, with white on the outside. The green heatshrink is there as the red cable was accidently nicked while stripping, so we had to cover it up so it doesn't short anything else.
+
+Remember to try and put the plug back together in the reverse order of how you pull it apart: Screw the two units together, then put on the crown, before sliding in the spring and screwing in the fuse.
+
+The shunt has two screws underneath the unit, allowing you to remove the brass blocks from the plastic housing. We can remove this as we're using our own housing; you can hot-glue the brass and the ESP next to each other on the lid of the plastic enclosure, then start to solder it up much like the assembly picture.
+
+![](images/assembled1.jpg)
+
+Note in the picture above, we have a copper wire reaching from the power block, reaching over to ground, which is on the other side of the ESP. we then have the two zeners from the ground block to A0 and to 3v3 in.
+
+Snip the leads of of the zeners to make them fit nicely, and to also make a join reaching over from A0 to the other block.
+
+Now you can drill a hole on either end of your case to put in the cable glands, and run the cable through them.
+
+*(We didn't, below, to make it easier to see what the assembled unit should look like)*
+
+Strip a large amount of sheath off the other end of the cables you have and attach the ground (which is the **white** connection) to the brass shunt blocks, and join the red wires together with one end of the resistor.
+
+![](images/assembled2.jpg)
+
+Here, the resistor is held above the shunt, via the thick lead running down into 3v3.
+
 
 ## Programming
 
@@ -264,7 +298,7 @@ window.onload = function(){
 }
 ```
 
-We've cut out a lot of the code to make the general layout more promient.
+We've cut out a lot of the code to make the general layout more prominent.
 
 1. Firstly, we set this function to be on page load, so once the page has fully finished loading, it will then run this javascript code.
 
@@ -283,6 +317,7 @@ Unfortunately, adding the website code to the ESP can be a bit of a trick if it 
 However, we can work around that by injecting the website code right into the ESP during compile time, which is what the `#include "./html.h"` does.
 
 We've also included a `convert.py` that you can run using python 3, which will read in the **webcode/index.html** file, and minify it into a c-styled header file to be included in the code.
+You can get Python [here](https://www.python.org/downloads/release/python-372/).
 
 Every change you do to the webcode will have to be minified in this way to be re-injected into the ESP during compile time.
 
