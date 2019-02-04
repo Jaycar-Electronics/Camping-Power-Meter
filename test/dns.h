@@ -1,5 +1,5 @@
-#ifndef DNSServer_h
-#define DNSServer_h
+#ifndef _DNS_H__
+#define _DNS_H__
 #include <WiFiUdp.h>
 
 #define DNS_QR_QUERY 0
@@ -68,3 +68,6 @@ class DNSServer
     void replyWithIP();
     void replyWithCustomCode();
 };
+
+#endif
+
