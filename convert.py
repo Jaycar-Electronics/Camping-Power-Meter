@@ -29,16 +29,16 @@ for line in contents.split('\n'):
 
     if line == '':
         continue; #skip
-    if '"' in line and "'" in line:
-        print('WARNING!, a line of code contains both single and double quotes; change this if you can!')
-
+    
+    line = re.sub(r'"',r"'",line)
+    
     #remove spaces around operators
     line = re.sub(r' ?([;/=<>+*(),]) ?',r'\1',line)
-    print(line)
+    #print(line)
     #strip line comments and use single quotes
     line = re.sub(r'//(.*)$',r'',line)
-    line = re.sub(r'"',r"'",line)
-   
+  
+    if '"' in line: print(line)
     out += line
 
 out += '''"; 
