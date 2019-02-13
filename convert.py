@@ -1,4 +1,4 @@
-#python3
+#!/usr/bin/python3
 
 from pathlib import Path
 import re
@@ -16,31 +16,30 @@ out = '''
 #define _HTML_H__
 const char indexhtml[] PROGMEM = "'''
 for line in contents.split('\n'):
-    line = line.strip()
-    if '/*' in line:
-        mark_comment = True
-    elif '*/' in line:
-        mark_comment = False
-        continue
+	line = line.strip()
+	if '/*' in line:
+		mark_comment = True
+	elif '*/' in line:
+		mark_comment = False
+		continue
 
-    if mark_comment:
-        continue #skip comment
+	if mark_comment:
+		continue #skip comment
 
-    if line == '':
-        continue; #skip
-    if '"' in line and "'" in line:
-        print('WARNING!, a line of code contains both single and double quotes; change this if you can!')
-
-    #remove spaces around operators
-    line = re.sub(r' ?([;/=<>+*(),]) ?',r'\1',line)
+	if line == '':
+		continue; #skip
+	
+	line = re.sub(r'"',r"'",line)
+	
+	#remove spaces around operators
+	line = re.sub(r' ?([;/=<>+*(),]) ?',r'\1',line)
 	#add space around var
 	line = re.sub(r'var',' var',line)
-    print(line)
-    #strip line comments and use single quotes
-    line = re.sub(r'//(.*)$',r'',line)
-    line = re.sub(r'"',r"'",line)
-   
-    out += line
+	#strip line comments and use single quotes
+	line = re.sub(r'//(.*)$',r'',line)
+  
+	if '"' in line: print(line)
+	out += line
 
 out += '''"; 
 #endif
