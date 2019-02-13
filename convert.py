@@ -1,6 +1,5 @@
 #python3
 
-from lxml import html,etree
 from pathlib import Path
 import re
 
@@ -34,6 +33,8 @@ for line in contents.split('\n'):
 
     #remove spaces around operators
     line = re.sub(r' ?([;/=<>+*(),]) ?',r'\1',line)
+	#add space around var
+	line = re.sub(r'var',' var',line)
     print(line)
     #strip line comments and use single quotes
     line = re.sub(r'//(.*)$',r'',line)
@@ -45,3 +46,5 @@ out += '''";
 #endif
 '''
 Path(outfile).open('w').write(out)
+
+print(out)

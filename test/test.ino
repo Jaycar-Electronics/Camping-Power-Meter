@@ -17,7 +17,7 @@ String text = ""; // to convert reading -> text
 void setup(void){
 	pinMode(A0, INPUT);
 	Serial.begin(115200);
-
+	WiFi.setOutputPower(10);
 	WiFi.softAPConfig(apIP, apIP, IPAddress(255,255,255,0));
 	WiFi.softAP(custom_ssid);
 	dns.start(53, "*", apIP);	//this routes everything to ourselves
@@ -36,11 +36,13 @@ void setup(void){
 	});
 
 	server.begin();
+	Serial.println();
 	Serial.println("Web server started!");
 }
 
 void loop(void){
 	data = analogRead(A0);
+	Serial.println(data,DEC);
 	delay(50);
 	dns.processNextRequest();
 	server.handleClient();

@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html> <head> <title>CampingCurrentMeter</title>
+<html> <head> <title>Camping Current Meter</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"> 
 	<script>
 /*
@@ -25,14 +25,14 @@ window.onload = function(){
 	var avg = 0;
 
 	function asyncRead(url, func){ //read data from ESP8266 
-		/*
+	/*	
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function(){
 					if(this.readyState == 4 && this.status == 200){ func(xhttp.responseText); }
 			};
 			xhttp.open("GET", url, true);
 			xhttp.send();
-		 */
+	*/	 
 		func(5 + Math.random() * 2);
 	}
 	function updateData(data){
