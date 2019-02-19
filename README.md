@@ -4,6 +4,9 @@ This is more of an electronics lesson than anything else, We go over the fundame
 
 This device is a simple current meter, set up so you can use it while camping to see what sort of power your 12v devices are using.
 
+Note that this project is designed to be more of a theory-lesson than a real practical unit. we have a [30A Current Module](https://jaycar.com.au/p/XC4610) and a [Regulator](https://jaycar.com.au/p/ZV1565) that can be used to make this a little more robust. 
+Consider reading through to get an understanding of the theory then using these components for a travel handy kit.
+
 
 ## Bill of Materials
 
@@ -26,6 +29,8 @@ This device is a simple current meter, set up so you can use it while camping to
 ## Software and Libraries
 
 * This uses the ESP8266, so you need to set up the ESP instructions in the Arduino IDE. You can do this by following the instructions in the manual on the [ESP8266 Product Page](http://jaycar.com.au/p/XC3802)
+
+* We are also using the ESP8266 SPIF File System, you can set this up by first downloading the [ESP Tool](https://github.com/esp8266/arduino-esp8266fs-plugin/releases/download/0.1.3/ESP8266FS-0.1.3.zip) and placing it in your `Arduino/tools/` directory (or make one if it doesn't exist) - so the end result should look like `Arduino/tools/ESP8266FS/tool/xxx.jar`
 
 ## Theory and Design
 
@@ -204,33 +209,27 @@ The website is handled by the code below, *(some parts ommitted for brevity)*
 ESP8266WebServer server(80);
 
 void setup(){
-  server.on("/" [](){
-    server.send(200, "text/html", indexhtml);
-  });
+	//here we define a server mountpoint; when the user accesses current, we send them the text data
+	server.on("/current", [](){
+		text = (String)data;
+		server.send(200, "text/html", text);
+	});
+
+	//otherwise, if we can't find anything ( in our mountpoints) we then call the fileRead function
+	server.onNotFound([](){
+		if(!fileRead(server.uri())){
+			server.send(404, "text/html", "<h1>404 File not found on SPIFFS</h1>");
+		}
+	});
 }
 void loop(){
   server.handleClient();
 }
 ```
 
-If you've done some c code before, you might see the `[](){...}` and wonder what that is.
-This is simply an *anonymous* function, which means it's a function with no name.
-For now you don't have to worry about it, but it allows us to put our function right into the parameter of the `server.on()` statement, which might make it a little easier to read and follow for these small examples.
-If it were any bigger, we'd probably put it into a seperate function, and put that function here instead;
+This code first sets up `/current` as a server mountpoint; which means when the user accesses /current on our website, the ESP will run this code to convert the data into a String representation and send it back to the user.
 
-we also provide another "webpage" under the "/current" web-address.
-So when the phone asks for `10.0.0.7/current` we run the following code:
-
-```c
-  String text = "";
-  double data = 0;
-
-  server.on("/current",[](){
-    text = (String) data;
-    server.send(200, "text/html", text);
-  });
-```
-
+Next we define a "NotFound" function, which kicks in when the user requests a site or page that we have not defined in 
 This code first converts the `data` variable into a string/text format, and then sends it over the web-connection.
 Back in the loop, we simply set the data being the reading from analogRead:
 
