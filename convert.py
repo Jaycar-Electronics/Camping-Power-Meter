@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 infile = './webcode/index.html'
-outfile = './test/html.h'
+outfile = './powermeter/html.h'
 infile = input('input file? default: {}'.format(infile)) or infile
 outfile = input('output file? default: {}'.format(outfile)) or outfile
 print('converting..')
@@ -28,22 +28,21 @@ for line in contents.split('\n'):
 
 	if line == '':
 		continue; #skip
-	
+
 	line = re.sub(r'"',r"'",line)
-	
+
 	#remove spaces around operators
 	line = re.sub(r' ?([;/=<>+*(),]) ?',r'\1',line)
 	#add space around var
 	line = re.sub(r'var',' var',line)
 	#strip line comments and use single quotes
 	line = re.sub(r'//(.*)$',r'',line)
-  
+
 	if '"' in line: print(line)
 	out += line
 
-out += '''"; 
+out += '''";
 #endif
 '''
 Path(outfile).open('w').write(out)
-
 print(out)
