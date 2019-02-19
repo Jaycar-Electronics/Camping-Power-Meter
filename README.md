@@ -11,7 +11,7 @@ This device is a simple current meter, set up so you can use it while camping to
 |---|---|---|
 |1 | [XC3802](http://jaycar.com.au/p/XC3802) | ESP 8266
 |2 | [ZR1398](http://jaycar.com.au/p/ZR1398) | 3v3 zener diode
-|1 | [RR2550](http://jaycar.com.au/p/RR3258) | 22ohm resistor
+|1 | [RR3258](http://jaycar.com.au/p/RR3258) | 22ohm resistor
 |1 | [QP5410](http://jaycar.com.au/p/QP5410) | 5A shunt
 |1 | [WC6026](http://jaycar.com.au/p/WC6026) | socket to socket jumper lead
 |1 | [WH3057](http://jaycar.com.au/p/WH3057) | 7.5A 2 Core tinned cable
