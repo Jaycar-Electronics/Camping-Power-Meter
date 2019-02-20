@@ -87,4 +87,10 @@ window.onload = function(){
 			clearInterval(checkbox_interval);
 		}
 	}
+
+	var copier = document.getElementById('copier');
+	copier.onclick = function(){
+		log.select();
+		document.execCommand('copy');
+	}
 }

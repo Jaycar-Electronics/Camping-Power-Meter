@@ -9,7 +9,7 @@ ESP8266WebServer	server(80);	//instantiate server at port 80 (http port)
 IPAddress			apIP(10,0,0,7);	//our access point ip
 
 double data = 0;	// to store current reading
-String text = "";   // to convert reading -> text
+String text = ""; // to convert reading -> text
 
 void setup(void){
 	SPIFFS.begin();			//start filesystem
@@ -18,7 +18,6 @@ void setup(void){
 
 	WiFi.softAPConfig(apIP, apIP, IPAddress(255,255,255,0));
 	WiFi.softAP(custom_ssid);
-
 
 	//here we define a server mountpoint; when the user accesses current, we send them the text data
 	server.on("/current", [](){
@@ -41,23 +40,22 @@ void setup(void){
 }
 
 void loop(void){
-	data = analogRead(A0);
-	Serial.println(data,DEC);
-	delay(50);
+	data = analogRead(A0) / 1024;
 	server.handleClient();
 }
+
 bool fileRead(String filepath){
-
 	if(filepath.endsWith("/")) filepath += "index.html";
-
 	if( SPIFFS.exists(filepath) ) {
 
 		File f = SPIFFS.open(filepath, "r");
 		server.streamFile(f, contentType(filepath));
+    f.close();
 		return true;
 	}
 	return false;
 }
+
 String contentType(String filepath){
 	if(filepath.endsWith(".html")) return "text/html";
 	else if(filepath.endsWith(".css")) return "text/css";
