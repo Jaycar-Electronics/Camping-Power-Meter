@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
 
@@ -17,8 +16,8 @@ void setup(void){
 	Serial.begin(115200);
 
 	WiFi.softAPConfig(apIP, apIP, IPAddress(255,255,255,0));
-	WiFi.softAP(custom_ssid);
-
+	int ret = WiFi.softAP(custom_ssid);
+  
 	//here we define a server mountpoint; when the user accesses current, we send them the text data
 	server.on("/current", [](){
 		text = (String)data;
@@ -36,16 +35,21 @@ void setup(void){
 
 	Serial.println();
 	Serial.println("Web server started!");
-
+  delay(200);
 }
 
 void loop(void){
 	data = analogRead(A0) / 1024;
+ delay(50);
 	server.handleClient();
 }
 
 bool fileRead(String filepath){
+
 	if(filepath.endsWith("/")) filepath += "index.html";
+  
+  Serial.println(filepath);
+  
 	if( SPIFFS.exists(filepath) ) {
 
 		File f = SPIFFS.open(filepath, "r");

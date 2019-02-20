@@ -30,7 +30,7 @@ window.onload = function(){
 	}
 
 	function updateData(data){
-		datapoints.push(data);
+		datapoints.push(parseFloat(data));
 		datapoints.shift();
 		var sum = 0;
 		for( var i = 0; i < datapoints.length; i++ ){
@@ -42,7 +42,8 @@ window.onload = function(){
 	}
 
 	function updatePage(data){
-		reading_span.innerText = data.toFixed(3);
+
+		reading_span.innerText = parseFloat(data).toFixed(3);
 		average_span.innerText = avg;
 		var dist = canvas.width / data_len;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -52,9 +53,9 @@ window.onload = function(){
 		p = 0;
 
 		datapoints.forEach(function(value){
-			ctx.lineTo(p,canvas.height - (value*10));
+			
+			ctx.lineTo(p,canvas.height * (1 - value));
 			p += dist;
-
 		});
 		ctx.stroke();
 	}

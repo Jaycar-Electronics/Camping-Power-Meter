@@ -4,9 +4,9 @@ This is more of an electronics lesson than anything else, We go over the fundame
 
 This device is a simple current meter, set up so you can use it while camping to see what sort of power your 12v devices are using.
 
-Note that this project is designed to be more of a theory-lesson than a real practical unit. we have a [30A Current Module](https://jaycar.com.au/p/XC4610) and a [Regulator](https://jaycar.com.au/p/ZV1565) that can be used to make this a little more robust. 
-Consider reading through to get an understanding of the theory then using these components for a travel handy kit.
+Note that this project is designed to be more of a theory-lesson than a real practical unit. we have a [30A Current Module](https://jaycar.com.au/p/XC4610) and a [Regulator](https://jaycar.com.au/p/ZV1565) that can be used to make this a little more robust.
 
+Consider reading through to get an understanding of the theory then using these additional components for a travel handy kit.
 
 ## Bill of Materials
 
@@ -25,6 +25,7 @@ Consider reading through to get an understanding of the theory then using these 
 
 * Note, the cig plug used includes a 2-3A fuse, if you want to measure the full 5A, you should get a couple of [SF2166](https://jaycar.com.au/p/SF2166)
 
+* If you want to use the ZV1565 Regulator, you must take note that the voltage in is 5V. This means you will still need a zener diode to cut from 12V down to 5V, but the increased circuit complexity will give more efficient operation.
 
 ## Software and Libraries
 
@@ -229,7 +230,9 @@ void loop(){
 
 This code first sets up `/current` as a server mountpoint; which means when the user accesses /current on our website, the ESP will run this code to convert the data into a String representation and send it back to the user.
 
-Next we define a "NotFound" function, which kicks in when the user requests a site or page that we have not defined in 
+Next we define a "NotFound" function, which kicks in when the user requests a site or page that we have not defined above. More about the `notfound` function below.
+
+
 This code first converts the `data` variable into a string/text format, and then sends it over the web-connection.
 Back in the loop, we simply set the data being the reading from analogRead:
 
@@ -311,16 +314,62 @@ We've cut out a lot of the code to make the general layout more prominent.
 
 ###### Putting the website onto the ESP
 
-Unfortunately, adding the website code to the ESP can be a bit of a trick if it relies on loading an external file; we'd then have to include an SD card, load some `FAT32` filesystem just to read that file, etc etc.
+Previously the only way to get the website code onto the ESP8266 would be to either include it in a large one-line string variable ( and taking up flash space) or to solder on a little SD card module and read from the FAT32 Filesystem, which is a huge task in and of itself.
 
-However, we can work around that by injecting the website code right into the ESP during compile time, which is what the `#include "./html.h"` does.
+Thankfully the guys at Expressif (Makers of the ESP8266 Codebase) have created **SPIFFS** - SPI Flash File System - which can be used to place all our website data, and easily called into the program code.
 
-We've also included a `convert.py` that you can run using python 3, which will read in the **webcode/index.html** file, and minify it into a c-styled header file to be included in the code.
-You can get Python [here](https://www.python.org/downloads/release/python-372/).
+Once you have the tool installed, you should see a new option when you select "Tool" in the Arduino IDE:
 
-Every change you do to the webcode will have to be minified in this way to be re-injected into the ESP during compile time.
+![](images/tool.png)
+
+*ESP8266 Sketch Data Upload*
+
+This will upload the "data" folder in the sketch folder into the ESP's memory.
+
+![](images/spiffs.png)
+
+From this, we can use seperate files for our javascript, HTML, and CSS, and we don't have to worry about putting it into a c-string.
+
+Every time you change your website code, you will have to re-upload data. In our code, we hijack the "onNotFound" function to look in our SPIFFS for a particular filename, and stream that.
+
+```c
+	//here we define a server mountpoint; when the user accesses current, we send them the text data
+	server.on("/current", [](){
+		text = (String)data;
+		server.send(200, "text/html", text);
+	});
+
+	//otherwise, if we can't find anything ( in our mountpoints) we then call the fileRead function
+	server.onNotFound([](){
+		if(!fileRead(server.uri())){
+			server.send(404, "text/html", "<h1>404 File not found on SPIFFS</h1>");
+		}
+	});
+```
+The only "mountpoint" we define is the `/current` - anything else will be deemed as not found, in which the `fileRead()` function will try to find it the FS, and if so, stream that instead of returning the 404 message.
+
+* For instance, when the phone requests "index.html" - because we have not defined a "index.html" mountpoint, it will fall back to the onNotFound function, which calls fileRead.
+
+`fileRead` then looks for the file on the SPIFFS and streams it.
+
+```c
+
+bool fileRead(String filepath){
+	if( SPIFFS.exists(filepath) ) {
+		File f = SPIFFS.open(filepath, "r");
+		server.streamFile(f, contentType(filepath));
+		f.close();
+		return true;
+	}
+	return false;
+}
+```
+Note, for the web-browser to handle it correctly, we must also define the contentType, which is another custom function that is made in the source code. This simply checks if the file ends in `.html`, and returns `"text/html"`
+
+## Programming
+
+When progamming, be sure to change the Flashsize to "4M (1M SPIFFS)" which will portion a size of the memory to use with SPIFFS. 
 
 ## Use
-
 Use is easy enough, look on your phone for a new network and connect to it.
 From there, if you open up the webbrowser and navigate to `10.0.0.7` or whatever IP address you set above in the ip address section.
