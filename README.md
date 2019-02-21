@@ -1,4 +1,4 @@
-JavaScript# Camping-Battery-Meter
+# Camping-Battery-Meter
 
 This is more of an electronics lesson than anything else, We go over the fundamental electronics for building a complete circuit idea, discussing Ohm's law, Kirchhoff's law, analog and digital values, and the difference between website and embedded-C code.
 
