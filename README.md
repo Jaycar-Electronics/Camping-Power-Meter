@@ -1,8 +1,8 @@
-# Camping-Battery-Meter
+JavaScript# Camping-Battery-Meter
 
 This is more of an electronics lesson than anything else, We go over the fundamental electronics for building a complete circuit idea, discussing Ohm's law, Kirchhoff's law, analog and digital values, and the difference between website and embedded-C code.
 
-This device is a simple current meter, set up so you can use it while camping to see what sort of power your 12v devices are using.
+This device is a simple current meter, set up so you can use it while camping to see what sort of power your 12v devices are using. The maximum current is recommended at 5A, however with a few minor tweaks you can easily change that.
 
 Note that this project is designed to be more of a theory-lesson than a real practical unit. we have a [30A Current Module](https://jaycar.com.au/p/XC4610) and a [Regulator](https://jaycar.com.au/p/ZV1565) that can be used to make this a little more robust.
 
@@ -25,7 +25,7 @@ Consider reading through to get an understanding of the theory then using these 
 
 * Note, the cig plug used includes a 2-3A fuse, if you want to measure the full 5A, you should get a couple of [SF2166](https://jaycar.com.au/p/SF2166)
 
-* If you want to use the ZV1565 Regulator, you must take note that the voltage in is 5V. This means you will still need a zener diode to cut from 12V down to 5V, but the increased circuit complexity will give more efficient operation.
+* If you want to use the [ZV1565](https://jaycar.com.au/p/ZV1565) Regulator, you must take note that the max `voltage_in` is 5V. This means you will still need another step-down regulation (zener diode or regulator) to cut from 12V down to 5V, but the increased circuit complexity will give more *efficient* operation.
 
 ## Software and Libraries
 
@@ -81,14 +81,14 @@ You can see a quick visual guide to what quantization is below: *(Images courtes
 
 ![](images/2bitadc.png)
 
-This is a two bit "analog to digital converter" (ADC) with 4 levels of voltage output, notice that small changes in voltages are completely wiped out, as the AD  doesn't have the resolution to read duch a small change, compared to a 3bit ADC:
+This is a two bit "analog to digital converter" (ADC) with 4 levels of voltage output, notice that small changes in voltages are completely wiped out, as the AD  doesn't have the resolution to read such a small change, compared to a 3bit ADC:
 
 ![](images/3bitadc.png)
 
 Now, bigger changes can be tracked with more resolution of bits representing the changes.
 
 Our ADC has a 10 bit resolution, which is pretty good resolution. with the "clamp" on 1v, we can find that:
-`1V / 1024 values = 0.96765 mV` meaning a value of 1 corresponds to a voltage of 0.97 mV, or if we grace ourselves to round to 1mV, that equates about 100mA of current through the shunt! *(and a maxium of 102.4A, but the shunt couldn't handle that amount of current. this is the difference between practical and theoretical electronics.)*
+`1V / 1024 values = 0.96765 mV` meaning a value of 1 corresponds to a voltage of 0.97 mV, or if we grace ourselves to round to 1mV, that equates about 100mA of current through the shunt! *(and a maximum of 102.4A, but the shunt couldn't handle that amount of current. this is the difference between practical and theoretical electronics.)*
 
 ###### Putting it all together
 
@@ -124,13 +124,13 @@ Now we can be assured that the **?v** is going to be between some residual volta
 
 We know that the power supply for the ESP8266 is around 3.3V nominal (datasheet and product page) so we need a 3.3V source to power this. but we only have 12, so how can we power it?
 
-The answer comes down to a voltage divider circuit, and it works similarly to above. Very similar, infact.
+The answer comes down to a voltage divider circuit, and it works similarly to above. Very similar, in fact.
 
 ![](images/voltdiv.png)
 
 This is a very common circuit used all throughout electronic engineering. suppose you have 2 voltage drops, `a` and `b` - and you want to find the voltage coming out between them. We've already done this sort of circuit but now we want a specific voltage coming out of the middle; if you suppose that both `a` and `b` are the same value, it would make sense that between 12V and 0V, the voltage would get halved, and `a` and `b` would have to both drop 6V.
 
-Infact, as we saw before, to measure that voltage coming out, you would only have to know about the voltage drop across `b`, as it is tied to 0.
+In fact, as we saw before, to measure that voltage coming out, you would only have to know about the voltage drop across `b`, as it is tied to 0.
 
 In this case, we want a voltage drop across b to be 3.3v; we could use resistors in the voltage divider equation: `Vout = Vin * R2 / (R1 + R2)` but this will only proportionally scale the voltage: If you set up the circuit to give 3.3V on 12, it will give 6.6V on 24V, and some other values for other voltages, which can damage the ESP.
 
@@ -161,7 +161,7 @@ First step is to cut the cable in half and make the plug and socket connections 
 
 ![](images/plug2.jpg)
 
-Similarly for the plug, we will put the red on the center pin position, with white on the outside. The green heatshrink is there as the red cable was accidently nicked while stripping, so we had to cover it up so it doesn't short anything else.
+Similarly for the plug, we will put the red on the center pin position, with white on the outside. The green heat shrink is there as the red cable was accidently nicked while stripping, so we had to cover it up so it doesn't short anything else.
 
 Remember to try and put the plug back together in the reverse order of how you pull it apart: Screw the two units together, then put on the crown, before sliding in the spring and screwing in the fuse.
 
@@ -171,7 +171,7 @@ The shunt has two screws underneath the unit, allowing you to remove the brass b
 
 Note in the picture above, we have a copper wire reaching from the power block, reaching over to ground, which is on the other side of the ESP. we then have the two zeners from the ground block to A0 and to 3v3 in.
 
-Snip the leads of of the zeners to make them fit nicely, and to also make a join reaching over from A0 to the other block.
+Snip the leads of the zeners to make them fit nicely, and to also make a join reaching over from A0 to the other block.
 
 Now you can drill a hole on either end of your case to put in the cable glands, and run the cable through them.
 
@@ -200,11 +200,11 @@ You will find, near the top of the code:
 ```c
 IPAddress			apIP(10,0,0,7);	//our access point ip
 ```
-This sets up the IP address to be had by the access point when we run the server, and it corresponds to an ip address of `10.0.0.7` -- you can change this variable to any ip address that you want, you will just have to remember it to put into the phone later.
+This sets up the IP address to be had by the access point when we run the server, and it corresponds to an IP address of `10.0.0.7` -- you can change this variable to any IP address that you want, you will just have to remember it to put into the phone later.
 
 ###### Delivering the website to the phone
 
-The website is handled by the code below, *(some parts ommitted for brevity)*
+The website is handled by the code below, *(some parts omitted for brevity)*
 
 ```c
 ESP8266WebServer server(80);
@@ -228,10 +228,9 @@ void loop(){
 }
 ```
 
-This code first sets up `/current` as a server mountpoint; which means when the user accesses /current on our website, the ESP will run this code to convert the data into a String representation and send it back to the user.
+This code first sets up `/current` as a server mount point; which means when the user accesses /current on our website, the ESP will run this code to convert the data into a String representation and send it back to the user.
 
-Next we define a "NotFound" function, which kicks in when the user requests a site or page that we have not defined above. More about the `notfound` function below.
-
+Next we define a `noNotFound()` function, which kicks in when the user requests a site or page that we have not defined above. More about this function below.
 
 This code first converts the `data` variable into a string/text format, and then sends it over the web-connection.
 Back in the loop, we simply set the data being the reading from analogRead:
@@ -245,9 +244,11 @@ void loop(){
 
 #### Website code
 
-Now that the ESP delivers our webpage, we want more than just a simple static number to represent whatever the reading was at that point of time. Firstly we'll build a bit of a webpage with html code, and then fill it out and update it with Javascript.
+Now that the ESP delivers our webpage, we want more than just a simple static number to represent whatever the reading was at that point of time. Firstly we'll build a bit of a webpage with html code, and then fill it out and update it with JavaScript.
 
-Javascript code and displaying the HTML is handled by the phone or computer; sort of like the ESP is sending these commands to the phone, to display it like such. There is quite a bit more processing power and ability on the phone compared to the tiny ESP module.
+HTML and JavaScript code is handled by the phone; as such, you could almost think of it as the ESP is sending these "commands" to the phone. the HTML provides the layout and structure of the website, and the JavaScript provides the functionality: what to do when a button is clicked, and so on.
+
+There's quite a bit more processing power on the phone rather than the tiny ESP8266 module, so anything involving strings or floats or interesting data operations like that are best handled on the phone/JavaScript side of things.
 
 ```html
 <body>
@@ -302,7 +303,7 @@ window.onload = function(){
 
 We've cut out a lot of the code to make the general layout more prominent.
 
-1. Firstly, we set this function to be on page load, so once the page has fully finished loading, it will then run this javascript code.
+1. Firstly, we set this function to be on page load, so once the page has fully finished loading, it will then run this JavaScript code.
 
 2. We'll make some functions called `asyncRead` to read and process the data from the `/current` webpage on the same domain as this webpage. as well as `updateData` to keep track of an array of data, and `updatePage` to show up on the html site.
 
@@ -310,15 +311,15 @@ We've cut out a lot of the code to make the general layout more prominent.
 
 4. With the button and checkbox, we'll set an "onclick" function, so when the users click on these elements, it will run these functions.
 
-5. Finally, we'll use the `setInterval(function,time);` javascript call, so that the phone will call this function, every 500ms; this is so the page will automatically refresh with new information, as each 500ms asyncRead will be called, updating the stored data and then updating the page.
+5. Finally, we'll use the `setInterval(function,time);` JavaScript call, so that the phone will call this function, every 500ms; this is so the page will automatically refresh with new information, as each 500ms `asyncRead` will be called, updating the stored data and then updating the page.
 
 ###### Putting the website onto the ESP
 
-Previously the only way to get the website code onto the ESP8266 would be to either include it in a large one-line string variable ( and taking up flash space) or to solder on a little SD card module and read from the FAT32 Filesystem, which is a huge task in and of itself.
+Previously the only way to get the website code onto the ESP8266 would be to either include it in a large one-line string variable ( and taking up flash space) or to solder on a little SD card module and read from the FAT32 file system, which is a huge task in and of itself.
 
 Thankfully the guys at Expressif (Makers of the ESP8266 Codebase) have created **SPIFFS** - SPI Flash File System - which can be used to place all our website data, and easily called into the program code.
 
-Once you have the tool installed, you should see a new option when you select "Tool" in the Arduino IDE:
+Once you have the tool installed, (Checking the **Software and Libraries** section above) you should see a new option when you select "Tool" in the Arduino IDE:
 
 ![](images/tool.png)
 
@@ -328,7 +329,7 @@ This will upload the "data" folder in the sketch folder into the ESP's memory.
 
 ![](images/spiffs.png)
 
-From this, we can use seperate files for our javascript, HTML, and CSS, and we don't have to worry about putting it into a c-string.
+From this, we can use separate files for our JavaScript, HTML, and CSS, and we don't have to worry about putting it into a c-string.
 
 Every time you change your website code, you will have to re-upload data. In our code, we hijack the "onNotFound" function to look in our SPIFFS for a particular filename, and stream that.
 
@@ -346,9 +347,9 @@ Every time you change your website code, you will have to re-upload data. In our
 		}
 	});
 ```
-The only "mountpoint" we define is the `/current` - anything else will be deemed as not found, in which the `fileRead()` function will try to find it the FS, and if so, stream that instead of returning the 404 message.
+The only "mount point" we define is the `/current` - anything else will be deemed as not found, in which the `fileRead()` function will try to find it the FS, and if so, stream that instead of returning the 404 message.
 
-* For instance, when the phone requests "index.html" - because we have not defined a "index.html" mountpoint, it will fall back to the onNotFound function, which calls fileRead.
+* For instance, when the phone requests "index.html" - because we have not defined a "index.html" mount point, it will fall back to the `onNotFound` function, which calls `fileRead`.
 
 `fileRead` then looks for the file on the SPIFFS and streams it.
 
@@ -364,12 +365,12 @@ bool fileRead(String filepath){
 	return false;
 }
 ```
-Note, for the web-browser to handle it correctly, we must also define the contentType, which is another custom function that is made in the source code. This simply checks if the file ends in `.html`, and returns `"text/html"`
+Note, for the web-browser to handle it correctly, we must also define the `contentType`, which is another custom function that is made in the source code. This simply checks if the file ends in .html, and returns `"text/html"` - and so on for .js and .css files too.
 
 ## Programming
 
-When progamming, be sure to change the Flashsize to "4M (1M SPIFFS)" which will portion a size of the memory to use with SPIFFS. 
+When programming, be sure to change the flash size to "4M (1M SPIFFS)" which will portion a size of the memory to use with SPIFFS.
 
 ## Use
 Use is easy enough, look on your phone for a new network and connect to it.
-From there, if you open up the webbrowser and navigate to `10.0.0.7` or whatever IP address you set above in the ip address section.
+From there, if you open up the web browser and navigate to `10.0.0.7` or whatever IP address you set above in the IP address section.
